@@ -6,6 +6,10 @@ http://localhost:9090/
 
 http://localhost:3000/
 
+### Postgres admin
+
+http://localhost:8888/
+
 ### Reference
 
 #### Prometheus Grafana
