@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  war-wrapper:
+    image: warwrapper:develop
+    container_name: war-wrapper
+    restart: on-failure
+    ports:
+      - "8080:8080"
