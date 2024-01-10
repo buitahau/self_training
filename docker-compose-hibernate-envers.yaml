@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  hibernate-envers:
+    image: hibernateenvers:develop
+    container_name: hibernate-envers
+    restart: on-failure
+#    ports:
+#      - 8080:8080
