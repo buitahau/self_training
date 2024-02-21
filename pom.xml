@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<prettier-maven-plugin.version>0.22</prettier-maven-plugin.version>
+		<plugin.prettier.goal>write</plugin.prettier.goal>
 	</properties>
 	<dependencies>
 		<dependency>

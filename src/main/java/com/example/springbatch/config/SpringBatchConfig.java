@@ -6,6 +6,7 @@ import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
@@ -22,6 +23,15 @@ public class SpringBatchConfig {
             .addScript("classpath:org/springframework/batch/core/schema-drop-h2.sql")
             .addScript("classpath:org/springframework/batch/core/schema-h2.sql")
             .build();
+        /*
+        // TODO: add liquibase to generate batch table
+        DataSourceBuilder dataSource = DataSourceBuilder.create();
+        dataSource.driverClassName("org.h2.Driver");
+        dataSource.url("jdbc:h2:mem:dbspringbatch");
+        dataSource.username("sa");
+        dataSource.password("sa");
+        return dataSource.build();
+         */
     }
 
     @Bean(name = "transactionManager")
@@ -30,18 +40,20 @@ public class SpringBatchConfig {
     }
 
     @Bean(name = "jobRepository")
-    public JobRepository getJobRepository() throws Exception {
+    public JobRepository getJobRepository(
+        @Qualifier("transactionManager") PlatformTransactionManager platformTransactionManager
+    ) throws Exception {
         JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
         factory.setDataSource(dataSource());
-        factory.setTransactionManager(getTransactionManager());
+        factory.setTransactionManager(platformTransactionManager);
         factory.afterPropertiesSet();
         return factory.getObject();
     }
 
     @Bean(name = "jobLauncher")
-    public JobLauncher getJobLauncher() throws Exception {
+    public JobLauncher getJobLauncher(@Qualifier("jobRepository") JobRepository jobRepository) throws Exception {
         TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
-        jobLauncher.setJobRepository(getJobRepository());
+        jobLauncher.setJobRepository(jobRepository);
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
     }
