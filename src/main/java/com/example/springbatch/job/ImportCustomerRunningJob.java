@@ -23,13 +23,43 @@ public class ImportCustomerRunningJob {
     @Qualifier(ImportCustomerConstant.IMPORT_CUSTOMER_JOB)
     private Job importCustomerJob;
 
+    @Autowired
+    @Qualifier(ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_JOB)
+    private Job importCustomerSkippingJob;
+
+    @Autowired
+    @Qualifier(ImportCustomerConstant.IMPORT_CUSTOMER_FLOW_JOB)
+    private Job importCustomerFlowJob;
+
+    /*
     @Scheduled(fixedRate = 10000)
     public void run() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
-            .addString("jobId", "ImportCustomerJob_" + System.currentTimeMillis())
+            .addString("jobId", ImportCustomerConstant.IMPORT_CUSTOMER_JOB + "_" + System.currentTimeMillis())
             .addString("fileName", "src/main/resources/input/record_21022023.csv")
             .toJobParameters();
         JobExecution execution = jobLauncher.run(importCustomerJob, jobParameters);
+        log.info("Finish importing customer job with status {}", execution.getStatus());
+    }
+
+    @Scheduled(fixedRate = 10000)
+    public void runSkipping() throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder()
+            .addString("jobId", ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_JOB + "_" + System.currentTimeMillis())
+            .addString("fileName", "src/main/resources/input/record_skipping_21022023.csv")
+            .toJobParameters();
+        JobExecution execution = jobLauncher.run(importCustomerSkippingJob, jobParameters);
+        log.info("Finish importing customer job with status {}", execution.getStatus());
+    }
+     */
+
+    @Scheduled(fixedRate = 10000)
+    public void runFlow() throws Exception {
+        JobParameters jobParameters = new JobParametersBuilder()
+            .addString("jobId", ImportCustomerConstant.IMPORT_CUSTOMER_FLOW_JOB + "_" + System.currentTimeMillis())
+            .addString("fileName", "src/main/resources/input/record_skipping_21022023.csv")
+            .toJobParameters();
+        JobExecution execution = jobLauncher.run(importCustomerFlowJob, jobParameters);
         log.info("Finish importing customer job with status {}", execution.getStatus());
     }
 }

@@ -2,7 +2,7 @@ package com.example.springbatch.job.config;
 
 import com.example.springbatch.dto.CustomerDto;
 import com.example.springbatch.job.constant.ImportCustomerConstant;
-import com.example.springbatch.job.processor.ImportCustomerProcessor;
+import jakarta.el.PropertyNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -20,7 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
 @Configuration
-public class ImportCustomerJobConfig {
+public class ImportCustomerSkippingJobConfig {
 
     @Autowired
     private JobRepository jobRepository;
@@ -28,27 +28,29 @@ public class ImportCustomerJobConfig {
     @Autowired
     private PlatformTransactionManager transactionManager;
 
-    @Bean(name = ImportCustomerConstant.IMPORT_CUSTOMER_JOB)
-    public Job getImportCustomerJob(@Qualifier(ImportCustomerConstant.IMPORT_CUSTOMER_STEP_READ_CSV) Step readCsvStep) {
-        return new JobBuilder(ImportCustomerConstant.IMPORT_CUSTOMER_JOB, jobRepository).start(readCsvStep).build();
+    @Bean(name = ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_JOB)
+    public Job getImportCustomerJob(
+        @Qualifier(ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_STEP_READ_CSV) Step readCsvStep
+    ) {
+        return new JobBuilder(ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_JOB, jobRepository)
+            .start(readCsvStep)
+            .build();
     }
 
-    @Bean(name = ImportCustomerConstant.IMPORT_CUSTOMER_STEP_READ_CSV)
+    @Bean(name = ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_STEP_READ_CSV)
     protected Step readCsvStep(
         @Qualifier("importCustomerItemReader") ItemReader<CustomerDto> itemReader,
         @Qualifier("importCustomerItemProcessor") ItemProcessor<CustomerDto, CustomerDto> processor,
         @Qualifier("importCustomerItemWriter") ItemWriter<CustomerDto> itemWriter
     ) {
-        return new StepBuilder(ImportCustomerConstant.IMPORT_CUSTOMER_STEP_READ_CSV, jobRepository)
+        return new StepBuilder(ImportCustomerConstant.IMPORT_CUSTOMER_SKIPPING_STEP_READ_CSV, jobRepository)
             .<CustomerDto, CustomerDto>chunk(10, transactionManager)
             .reader(itemReader)
             .processor(processor)
             .writer(itemWriter)
+            .faultTolerant()
+            .skipLimit(10)
+            .skip(PropertyNotFoundException.class)
             .build();
-    }
-
-    @Bean("importCustomerItemProcessor")
-    public ItemProcessor<CustomerDto, CustomerDto> itemProcessor() {
-        return new ImportCustomerProcessor();
     }
 }
